@@ -1,0 +1,10 @@
+.crew-home{
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-content: space-around;
+    gap: 15px 30px;
+    width: 100%;
+
+}
