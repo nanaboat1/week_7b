@@ -34,20 +34,21 @@ const CrewHome : React.FC = ( ) => {
     });
     const [ open, setOpen ] = useState(false);
     const [dbRecords, setdbRecords ] = useState<any[]>([ ])
+    const [dbFlag, setdbFlag] = useState(false)
+    const [updt, setUpdt] = useState(false);
 
     const openDialog = () => setOpen(true) 
     const closeDialog = () => setOpen(false); 
-
+    const openUpdt = () => setUpdt(true);
+    const closeUpdt = () => setUpdt(false); 
 
     useEffect( () => { 
         readDatabase()
-
 
     }, [form, addCrew, deleteCrew])
 
     // form submission update
     const handleName = ( event : any)=>{
-        console.log(event.target.value )
         setForm(constVals => ({
                 ...constVals,
                 name : event.target!.value,
@@ -55,16 +56,12 @@ const CrewHome : React.FC = ( ) => {
 
     } 
     const handleHome = ( event : any)=>{
-
-        console.log(event.target.value )
         setForm(constVals => ({
                 ...constVals,
                 home : event.target!.value,
         }));
     }
     const handleAddr = ( event : any)=>{
-
-        console.log(event.target.value )
         setForm(constVals => ({
                 ...constVals,
                 address : event.target!.value,
@@ -72,8 +69,6 @@ const CrewHome : React.FC = ( ) => {
 
     }
     const handleAge = ( event : any)=>{
-
-        console.log(event.target.value )
         setForm(constVals => ({
                 ...constVals,
                 age : event.target!.value,
@@ -84,7 +79,7 @@ const CrewHome : React.FC = ( ) => {
     // card tile for a Crew.
     const Crew : React.FC<CrewProps> = ( {id, created_at, name, home, address, age} : CrewProps) =>{ 
 
-        //console.log ( id)
+        console.log ( id)
         return ( 
             <Card sx={{ maxWidth : 500 }}>
                 <CardActionArea>
@@ -109,7 +104,7 @@ const CrewHome : React.FC = ( ) => {
                         Delete
                     </Button>
                     <Button size='small' variant='contained' onClick={() => { updateData(id)}}> 
-                        Edit { id }
+                        Edit
                     </Button>
 
                 </CardActions>
@@ -168,7 +163,7 @@ const CrewHome : React.FC = ( ) => {
                     /> 
 
                 </div>
-                <Button variant='contained' onClick={ () => {sendData(form.id)}}> Submit { form.id} </Button>
+                <Button variant='contained' onClick={ () => {sendData(form.id)}}> Submit </Button>
             </Box>
             </Dialog>
 
@@ -187,22 +182,73 @@ const CrewHome : React.FC = ( ) => {
             id : id, 
             created_at : 'unknown'
         }
+    
         addCrew ( toForm ); 
+    
+    } 
+
+    const updtCrewForm = () => {
+        return (
+            <Dialog open={updt} onClose={closeUpdt} > 
+            <Box
+                component={"form"}
+                sx={{
+                    '& .MuiTexField-root' : { m: 1, width: '25ch'}
+                }}
+                height={350}
+                width={300}
+                whiteSpace={'break-spaces'}
+                noValidate
+                autoComplete="off"
+            >
+                <div className="crew-home">
+                    <TextField 
+                        required
+                        id="outlined-required"
+                        label="Name"
+                        value = {form.name}
+                        onChange={handleName} 
+                    />
+                    <TextField 
+                        required
+                        id="outlined-required"
+                        label="Hometown"
+                        value={form.home}
+                        onChange={handleHome}
+                    />
+                    <TextField 
+                        required
+                        id="outlined-required"
+                        label="Address"
+                        value={form.address}
+                        onChange={handleAddr}
+                    />
+                    <TextField 
+                        required
+                        type='number'
+                        id="outlined-required"
+                        label="Age"
+                        value={form.age}
+                        onChange={handleAge}
+                    /> 
+
+                </div>
+                <Button variant='contained' onClick={ () => {updateData(form.id); closeUpdt()}}> Update </Button>
+            </Box>
+            </Dialog>
+        ); 
     }
 
     const updateData = (id : number ) => {
 
         // lets read data first.
-
-        openDialog(); 
+    
         // get current form data
         // get id of current obj then populate in form. using setState
-        console.log ( dbRecords[id!-1].id );
-
+      
         // filters to get specific id to update.
         const sendData = dbRecords.filter ((obj ) => obj.id === id )
-        //console.log ( sendData[0] ); 
-
+     
         const toForm : CrewProps = {
             name : sendData[0].name,
             address : sendData[0].address, 
@@ -211,17 +257,19 @@ const CrewHome : React.FC = ( ) => {
             id : sendData[0].id, 
             created_at : sendData[0].created_at
         }
-        setForm( toForm );
-        //console.log( dbRecords );
 
-        updateCrew( toForm );
+        setForm( toForm );
+   
+        console.log (`id :${id}`)
+        openUpdt(); 
+
+        updateCrew( form );
 
 
 
     }
 
     const readDatabase = () => {
-
        // new way of working with promise.
        const data   = readTeam().then ( (res : any) => {
         setdbRecords (res)
@@ -229,8 +277,6 @@ const CrewHome : React.FC = ( ) => {
        );
 
        //console.log ( dbRecords )
-
-       
     }
     
 
@@ -249,12 +295,11 @@ const CrewHome : React.FC = ( ) => {
     return ( 
 
         <div >
-            <Button onClick={openDialog} variant='contained'> Dialog </Button>
+            <Button onClick={openDialog} variant='contained'> Add Crewmember </Button>
             {addCrewForm()}
-            {}
+            {updtCrewForm()}
             
             <div className='crew-home' > 
-             <Crew />
              { dbRecords.map(( field : CrewProps) => <Crew { ...field}/> )}
             </div>
             
