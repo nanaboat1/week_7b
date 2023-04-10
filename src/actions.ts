@@ -29,14 +29,15 @@ export const readTeam = async () => {
 
     return data;
 
-
 }; 
 
 export const updateCrew = async (payload : CrewProps) => { 
+
+    console.log ( payload.id )
     await supabase 
     .from('Posts')
-    .update({ home : payload.home, name : payload.name, age : payload.age, address : payload.address,  })
-    .eq('id', payload!.id )
+    .update({ id : payload.id, home : payload.home, name : payload.name, age : payload.age, address : payload.address, created_at : payload.created_at })
+    .eq('id', payload!.id)
 };
 
 export const deleteCrew = async (id : number) => {

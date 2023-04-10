@@ -12,7 +12,7 @@ import { Dialog } from '@mui/material'
 import { Height } from '@mui/icons-material';
 
 export interface CrewProps { 
-    id : undefined | number ; 
+    id : number ; 
     created_at : undefined | any; 
     home : string; 
     name : string; 
@@ -24,11 +24,13 @@ export interface CrewProps {
 const CrewHome : React.FC = ( ) => {
 
     // state variables. 
-    const [form, setForm] = useState({ 
+    const [form, setForm] = useState<CrewProps>({ 
         name : "",
         home : "", 
         address : "", 
         age : 50,
+        id : 0,
+        created_at : ''
     });
     const [ open, setOpen ] = useState(false);
     const [dbRecords, setdbRecords ] = useState<any[]>([ ])
@@ -41,9 +43,8 @@ const CrewHome : React.FC = ( ) => {
         readDatabase()
 
 
-    }, [form,])
+    }, [form, addCrew, deleteCrew])
 
-    
     // form submission update
     const handleName = ( event : any)=>{
         console.log(event.target.value )
@@ -53,7 +54,6 @@ const CrewHome : React.FC = ( ) => {
         }));
 
     } 
-
     const handleHome = ( event : any)=>{
 
         console.log(event.target.value )
@@ -62,7 +62,6 @@ const CrewHome : React.FC = ( ) => {
                 home : event.target!.value,
         }));
     }
-
     const handleAddr = ( event : any)=>{
 
         console.log(event.target.value )
@@ -72,7 +71,6 @@ const CrewHome : React.FC = ( ) => {
         }));
 
     }
-
     const handleAge = ( event : any)=>{
 
         console.log(event.target.value )
@@ -82,7 +80,6 @@ const CrewHome : React.FC = ( ) => {
         }));
 
     }
-
 
     // card tile for a Crew.
     const Crew : React.FC<CrewProps> = ( {id, created_at, name, home, address, age} : CrewProps) =>{ 
@@ -108,11 +105,11 @@ const CrewHome : React.FC = ( ) => {
                     </CardContent>
                 </CardActionArea>
                 <CardActions>
-                    <Button size='small' variant='contained' > 
+                    <Button size='small' variant='contained' onClick={() => { deleteCrew(id)}}> 
                         Delete
                     </Button>
                     <Button size='small' variant='contained' onClick={() => { updateData(id)}}> 
-                        Edit
+                        Edit { id }
                     </Button>
 
                 </CardActions>
@@ -122,7 +119,6 @@ const CrewHome : React.FC = ( ) => {
         ); 
 
     }
-
 
     // add data to supabase.
     const addCrewForm = () => {
@@ -139,7 +135,6 @@ const CrewHome : React.FC = ( ) => {
                 whiteSpace={'break-spaces'}
                 noValidate
                 autoComplete="off"
-                
             >
                 <div className="crew-home">
                     <TextField 
@@ -147,8 +142,7 @@ const CrewHome : React.FC = ( ) => {
                         id="outlined-required"
                         label="Name"
                         value = {form.name}
-                        onChange={handleName}
-                        
+                        onChange={handleName} 
                     />
                     <TextField 
                         required
@@ -174,7 +168,7 @@ const CrewHome : React.FC = ( ) => {
                     /> 
 
                 </div>
-                <Button variant='contained' onClick={sendData}> Submit </Button>
+                <Button variant='contained' onClick={ () => {sendData(form.id)}}> Submit { form.id} </Button>
             </Box>
             </Dialog>
 
@@ -182,9 +176,7 @@ const CrewHome : React.FC = ( ) => {
 
 
     }; 
-    const a: any = [1,2,3,4,5]
-
-    const sendData  = () => {
+    const sendData  = ( id : number ) => {
 
         // get current form data
         const toForm : CrewProps = {
@@ -192,28 +184,35 @@ const CrewHome : React.FC = ( ) => {
             address : form.address, 
             age : form.age, 
             home : form.home, 
-            id : -1, 
+            id : id, 
             created_at : 'unknown'
         }
         addCrew ( toForm ); 
     }
 
-    const updateData = (id : number | undefined) => {
+    const updateData = (id : number ) => {
 
         // lets read data first.
 
         openDialog(); 
         // get current form data
         // get id of current obj then populate in form. using setState
+        console.log ( dbRecords[id!-1].id );
+
+        // filters to get specific id to update.
+        const sendData = dbRecords.filter ((obj ) => obj.id === id )
+        //console.log ( sendData[0] ); 
+
         const toForm : CrewProps = {
-            name : dbRecords[id!-1].name,
-            address : dbRecords[id!-1].address, 
-            age : dbRecords[id!-1].age, 
-            home: dbRecords[id!-1].home, 
-            id : dbRecords[id!-1].id, 
-            created_at : dbRecords[id!-1].created_at
+            name : sendData[0].name,
+            address : sendData[0].address, 
+            age : sendData[0].age, 
+            home: sendData[0].home, 
+            id : sendData[0].id, 
+            created_at : sendData[0].created_at
         }
-        setForm( toForm);
+        setForm( toForm );
+        //console.log( dbRecords );
 
         updateCrew( toForm );
 
@@ -229,7 +228,7 @@ const CrewHome : React.FC = ( ) => {
        }
        );
 
-       console.log ( dbRecords)
+       //console.log ( dbRecords )
 
        
     }
@@ -241,9 +240,8 @@ const CrewHome : React.FC = ( ) => {
         address : form.address, 
         age : form.age, 
         home : form.home, 
-        id : -1, 
+        id : form.id, 
         created_at : 'unknown'
-
     }
 
 
@@ -257,7 +255,7 @@ const CrewHome : React.FC = ( ) => {
             
             <div className='crew-home' > 
              <Crew />
-             { dbRecords.map(( field : CrewProps) => <Crew {...field}/> )}
+             { dbRecords.map(( field : CrewProps) => <Crew { ...field}/> )}
             </div>
             
 
