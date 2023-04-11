@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client';
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import App from "./App";
 import Layout from "./routes/Layout";
+import CrewProfile from "./components/CrewProfile";
 
 
 
@@ -19,6 +20,8 @@ root.render(
       <Route path="/" element={<Layout />}>
         <Route index={true} path="/" element={<App />} />
       </Route>
+
+      <Route index={true} path='/CrewProfile/:symbol' element={<CrewProfile />} />
     
 
 

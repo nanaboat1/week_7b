@@ -5,11 +5,18 @@ import { addCrew, readTeam, deleteCrew, updateCrew } from "../actions";
 import { 
         Box, Button, TextField, Typography, 
         Card, CardContent, Collapse, Avatar, CardActionArea, 
-        CardActions
+        CardActions,
+        Skeleton,
+        CardHeader,
+        Divider,
+        AvatarGroup,
+        Link, 
 
 } from "@mui/material";
 import { Dialog } from '@mui/material'
 import { Height } from '@mui/icons-material';
+import { Assignment, Boy, Face, Face2, Face4, Face5 } from '@mui/icons-material';
+import { green, red, blue, blueGrey, lightBlue, lightGreen } from '@mui/material/colors';
 
 export interface CrewProps { 
     id : number ; 
@@ -36,16 +43,28 @@ const CrewHome : React.FC = ( ) => {
     const [dbRecords, setdbRecords ] = useState<any[]>([ ])
     const [dbFlag, setdbFlag] = useState(false)
     const [updt, setUpdt] = useState(false);
+    const [rFlg, setrFlg] = useState(1);
+    const [loading, setloading] = useState(false); 
 
     const openDialog = () => setOpen(true) 
     const closeDialog = () => setOpen(false); 
     const openUpdt = () => setUpdt(true);
     const closeUpdt = () => setUpdt(false); 
 
-    useEffect( () => { 
-        readDatabase()
 
-    }, [form, addCrew, deleteCrew])
+    useEffect( () => { 
+        readDatabase();
+        const timer = setTimeout(() =>{
+            setloading(true);
+        }, 5000)
+
+        setloading(true);
+
+        return () => clearTimeout(timer);
+
+    }, [form, rFlg,loading])
+
+
 
     // form submission update
     const handleName = ( event : any)=>{
@@ -81,30 +100,69 @@ const CrewHome : React.FC = ( ) => {
 
         console.log ( id)
         return ( 
-            <Card sx={{ maxWidth : 500 }}>
-                <CardActionArea>
-                    <CardContent>
-                        <Typography gutterBottom variant='h6' component={'div'}>
+            <Card sx={{ width : 320 }}>
+                <CardHeader
+                    avatar={
+                        <Avatar sx={{ bgcolor: green[500]}} variant='rounded'>
+                            <Assignment/>
+                        </Avatar>
+                    }
+                    // call specific detail.
+                > 
+                    
+                </CardHeader>
+                <CardActionArea onClick={() => {
+                    
+                    
+                }}>
+
+                    <CardContent onClick={ () => {
+                        
+
+                    }} >
+                    <Button href={`http://localhost:5173/CrewProfile/${id}`}> More</Button>
+                    <AvatarGroup max={4}> 
+                            <Avatar sx={{ bgcolor: red[300]}} variant='rounded'>
+                                <Face/>
+                            </Avatar>
+                            <Avatar sx={{ bgcolor: lightBlue[500]}} variant='rounded'>
+                                <Face2/>
+                            </Avatar>
+                            <Avatar sx={{ bgcolor: blueGrey[500]}} variant='rounded'>
+                                <Face4/>
+                            </Avatar>
+                            <Avatar sx={{ bgcolor: lightGreen[500]}} variant='rounded'>
+                                <Face4/>
+                            </Avatar>
+                            <Avatar sx={{ bgcolor: green[400]}} variant='rounded'>
+                                <Face5/>
+                            </Avatar>
+                            </AvatarGroup>
+                        <Typography gutterBottom variant='h4' sx={{ mt : 3, fontSize : 'md'}} textAlign={'center'} fontFamily={'-apple-system'}>
+                            👔
+                        </Typography>
+                        <Typography gutterBottom variant='h6' sx={{ mt : 2, fontSize : 'md'}} textAlign={'center'} border={1} borderColor={'lightBlue'}>
                             {name}
                         </Typography>
-                        <Typography gutterBottom variant='h6' component={'div'}>
-                            {address}
+                        <Typography gutterBottom variant='h6' sx={{ mt : 2, fontSize : 'md'}} textAlign={'center'} border={1}>
+                            📮 : {address}
                         </Typography>
-                        <Typography gutterBottom variant='h6' component={'div'}>
-                            {home}
+                        <Typography gutterBottom variant='h6' sx={{ mt : 2, fontSize : 'md'}} textAlign={'center'} border={1}>
+                            🏡 : {home}
                         </Typography>
-                        <Typography gutterBottom variant='h6' component={'div'}>
-                            {age}
+                        <Typography gutterBottom variant='h6'  sx={{ mt : 0.5, fontSize : 'md'}} textAlign={'center'} border={1}>
+                            👧 : {age}
                         </Typography>
                         
                     </CardContent>
                 </CardActionArea>
-                <CardActions>
-                    <Button size='small' variant='contained' onClick={() => { deleteCrew(id)}}> 
+                <Divider />
+                <CardActions >
+                    <Button size='small' variant='contained' onClick={() => { rmvData(id)}}> 
                         Delete
                     </Button>
                     <Button size='small' variant='contained' onClick={() => { updateData(id)}}> 
-                        Edit
+                        Edit { id }
                     </Button>
 
                 </CardActions>
@@ -112,6 +170,14 @@ const CrewHome : React.FC = ( ) => {
             </Card>
 
         ); 
+
+    }
+
+    const rmvData = (id : number ) => {
+
+        deleteCrew(id); 
+        readDatabase();
+        setrFlg(rFlg + 3);
 
     }
 
@@ -184,6 +250,9 @@ const CrewHome : React.FC = ( ) => {
         }
     
         addCrew ( toForm ); 
+        setrFlg(2);
+        closeDialog();
+        readDatabase()
     
     } 
 
@@ -257,15 +326,14 @@ const CrewHome : React.FC = ( ) => {
             id : sendData[0].id, 
             created_at : sendData[0].created_at
         }
-
         setForm( toForm );
    
         console.log (`id :${id}`)
         openUpdt(); 
 
         updateCrew( form );
-
-
+        setrFlg(rFlg+ 4);
+        readDatabase()
 
     }
 
@@ -276,8 +344,7 @@ const CrewHome : React.FC = ( ) => {
        }
        );
 
-       //console.log ( dbRecords )
-    }
+   }
     
 
 
@@ -295,12 +362,13 @@ const CrewHome : React.FC = ( ) => {
     return ( 
 
         <div >
+            <h1> Team Lounge</h1>
             <Button onClick={openDialog} variant='contained'> Add Crewmember </Button>
             {addCrewForm()}
             {updtCrewForm()}
             
             <div className='crew-home' > 
-             { dbRecords.map(( field : CrewProps) => <Crew { ...field}/> )}
+             { dbRecords.map(( field : CrewProps) => loading ? (<Crew { ...field}/> ) : <Skeleton variant='rectangular' width={200} height={60} />) }
             </div>
             
 
